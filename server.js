@@ -1,48 +1,24 @@
-const express = require('express')
-const app = express()
-const PORT = 3000;
-const notes = require('./db/db.json')
-const { v4: uuidv4 } = require('uuid');
+const express = require('express');
+const routes = require('./routes');
+const app = express();
+const PORT = process.env.PORT || 3001;
 const log = require('./middleware/log');
 
-app.use(log);
-// set up server at local port
+// sends console log of request methods and url's
+app.use(log) 
+
+//setting up server
+///// parse incoming requests to json
 app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
+///// allows complex data types to pass through requests which mimic json data structures
+app.use(express.urlencoded({extended:true}));
+///// servers static files in public folder 
 app.use(express.static('public'));
+///// middleware that sends requests to routes folder
+app.use(routes);
 
-// app.listen(PORT, ()=> {
-//     console.log (`LISTENING ON PORT ${PORT}`)
-// })
+// opens server to listen to port
+app.listen(PORT, ()=>{
+    console.log(`LISTENING ON PORT ${PORT}`);
+});
 
-// GET 
-app.get('/api/notes', (req,res) => { res.status(200).json(notes)})
-// POST 
-app.post('/api/notes', (req,res) => {
-    console.info(`${req.method}: saving note`);
-    // Destructuring assignment for the items in req.body
-    const { title, text, id } = req.body;
-  
-    // If all the required properties are present
-    if (title && text) {
-      // Variable for the object we will save
-      const newNote = {
-        title,
-        text,
-        id: uuidv4(),
-      };
-  
-      const response = {
-        status: 'success',
-        body: newNote,
-    }
-    console.log(response);
-    res.status(201).json(response);
-  } else {
-    res.status(500).json('Error in posting note');
-  }
-})
-app.listen(PORT, ()=> {
-  console.log (`LISTENING ON PORT ${PORT}`)
-})
